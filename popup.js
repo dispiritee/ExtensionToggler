@@ -1,4 +1,3 @@
-// Инициализация
 document.addEventListener('DOMContentLoaded', () => {
   const extensionsList = document.getElementById('extensionsList');
   const addExtensionBtn = document.getElementById('addExtensionBtn');
@@ -6,9 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveExtensionBtn = document.getElementById('saveExtensionBtn');
   const extensionNameInput = document.getElementById('extensionName');
   const extensionIdInput = document.getElementById('extensionId');
-  let editingExtensionIndex = -1; // Для отслеживания редактируемого расширения
+  let editingExtensionIndex = -1;
 
-  // Функция для загрузки сохраненных расширений
   function loadExtensions() {
     chrome.storage.sync.get('extensions', (data) => {
       const extensions = data.extensions || [];
@@ -16,30 +14,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Функция для отображения списка расширений
   function renderExtensions(extensions) {
-    extensionsList.innerHTML = ''; // Очистим список
+    extensionsList.innerHTML = '';
     extensions.forEach((extension, index) => {
       const extensionContainer = document.createElement('div');
       extensionContainer.classList.add('toggle-container');
 
-      // Тумблер для включения/выключения расширения
       const toggleSwitch = document.createElement('input');
       toggleSwitch.type = 'checkbox';
       toggleSwitch.checked = extension.enabled;
       toggleSwitch.addEventListener('change', () => toggleExtension(extension.id, toggleSwitch.checked));
 
-      // Название расширения
       const label = document.createElement('label');
       label.textContent = extension.name;
 
-      // Кнопка настроек для редактирования (шестеренка)
       const settingsButton = document.createElement('span');
       settingsButton.classList.add('settings-button');
-      settingsButton.innerHTML = '⚙️'; // Символ шестеренки
+      settingsButton.innerHTML = '⚙️';
       settingsButton.addEventListener('click', () => editExtension(index, extension));
 
-      // Добавляем элементы в контейнер
       extensionContainer.appendChild(toggleSwitch);
       extensionContainer.appendChild(label);
       extensionContainer.appendChild(settingsButton);
@@ -47,28 +40,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Функция для включения/выключения расширения
   function toggleExtension(extensionId, enabled) {
     chrome.management.setEnabled(extensionId, enabled, () => {
       console.log(`Extension ${extensionId} ${enabled ? 'enabled' : 'disabled'}`);
     });
   }
 
-  // Функция для открытия/закрытия формы добавления нового расширения с анимацией
   addExtensionBtn.addEventListener('click', () => {
     if (extensionForm.classList.contains('active')) {
-      // Закрываем форму, если она уже открыта
       extensionForm.classList.remove('active');
       extensionNameInput.value = '';
       extensionIdInput.value = '';
     } else {
-      // Открываем форму
       extensionForm.classList.add('active');
-      editingExtensionIndex = -1; // Сброс редактируемого индекса
+      editingExtensionIndex = -1;
     }
   });
 
-  // Сохранение нового или отредактированного расширения
   saveExtensionBtn.addEventListener('click', () => {
     const name = extensionNameInput.value.trim();
     const id = extensionIdInput.value.trim();
@@ -78,17 +66,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const extensions = data.extensions || [];
 
         if (editingExtensionIndex >= 0) {
-          // Редактирование существующего расширения
           extensions[editingExtensionIndex].name = name;
           extensions[editingExtensionIndex].id = id;
         } else {
-          // Добавление нового расширения
           extensions.push({ name, id, enabled: false });
         }
 
-        // Сохраняем расширения и обновляем UI
         chrome.storage.sync.set({ extensions }, () => {
-          extensionForm.classList.remove('active'); // Закрываем форму с анимацией
+          extensionForm.classList.remove('active');
           extensionNameInput.value = '';
           extensionIdInput.value = '';
           loadExtensions();
@@ -97,23 +82,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Функция для редактирования расширения
   function editExtension(index, extension) {
     if (extensionForm.classList.contains('active') && editingExtensionIndex === index) {
-      // Закрываем форму, если она уже открыта для редактирования того же элемента
       extensionForm.classList.remove('active');
       extensionNameInput.value = '';
       extensionIdInput.value = '';
       editingExtensionIndex = -1;
     } else {
-      // Открываем форму и заполняем поля для редактирования
       extensionForm.classList.add('active');
       extensionNameInput.value = extension.name;
       extensionIdInput.value = extension.id;
-      editingExtensionIndex = index; // Сохраняем индекс редактируемого расширения
+      editingExtensionIndex = index;
     }
   }
 
-  // Загрузка расширений при запуске
   loadExtensions();
 });
