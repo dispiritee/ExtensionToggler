@@ -7,120 +7,230 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            padding: 10px;
-            width: 250px;
+            padding: 20px;
+            width: 320px;
+            height: 400px;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
         }
+
         h2 {
-            font-size: 18px;
-            margin-bottom: 10px;
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
         }
+
+        #extensionsList {
+            max-height: 220px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .extension-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 5px 0;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
         .toggle-container {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            max-width: 200px;
+            justify-content: space-between;
         }
+
         .toggle-container label {
             margin-left: 10px;
-            flex-grow: 1;
-        }
-        input[type="checkbox"] {
-            width: 40px;
-            height: 20px;
-            appearance: none;
-            background-color: #ccc;
-            border-radius: 10px;
-            position: relative;
-            cursor: pointer;
-            outline: none;
-        }
-        input[type="checkbox"]:checked {
-            background-color: #4caf50;
-        }
-        input[type="checkbox"]::before {
-            content: '';
-            position: absolute;
-            width: 18px;
-            height: 18px;
-            background-color: white;
-            border-radius: 50%;
-            top: 1px;
-            left: 1px;
-            transition: 0.2s;
-        }
-        input[type="checkbox"]:checked::before {
-            transform: translateX(20px);
-        }
-        #extensionForm {
-            opacity: 0;
-            max-height: 0;
+            color: #333;
+            white-space: nowrap;
             overflow: hidden;
-            transition: max-height 0.5s ease, opacity 0.5s ease;
+            text-overflow: ellipsis;
+            max-width: 140px;
         }
-        #extensionForm.active {
-            opacity: 1;
-            max-height: 200px;
+
+        .remove-button {
+            cursor: pointer;
+            color: red;
+            font-weight: bold;
+            margin-left: 10px;
         }
-        input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 5px;
-            box-sizing: border-box;
-        }
+
         .add-button {
             width: 100%;
             padding: 10px;
             background-color: #4caf50;
             color: white;
             border: none;
+            border-radius: 5px;
             cursor: pointer;
-            margin-bottom: 10px;
+            margin: 10px 0;
+            font-size: 16px;
         }
+
         .add-button:hover {
             background-color: #45a049;
         }
-        .settings-button {
-            margin-left: 5px;
+
+        .add-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #4caf50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
             cursor: pointer;
-            font-size: 18px;
-            color: #007bff;
+            font-size: 32px;
+            transition: background-color 0.3s;
         }
+
+        .add-fab:hover {
+            background-color: #45a049;
+        }
+
+        .telegram-fab {
+            position: fixed;
+            bottom: 20px;
+            right: 100px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #0088cc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+        }
+
+        .telegram-fab img {
+            width: 32px;
+            height: 32px;
+        }
+
+        .settings-button {
+            cursor: pointer;
+            font-size: 20px;
+            color: #007bff;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
         .settings-button:hover {
             color: #0056b3;
         }
-        .telegram-button {
-            display: block;
-            width: 96%;
-            padding: 5px;
-            text-align: center;
-            background-color: #0088cc;
-            color: white;
-            text-decoration: none;
-            font-size: 16px;
+
+        .menu {
+            display: none;
+            position: absolute;
+            bottom: 90px;
+            right: 20px;
+            background: white;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            margin-top: 5px;
-            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            padding: 10px;
+            z-index: 1000;
+            width: 280px;
         }
-        .telegram-button:hover {
-            background-color: #006699;
+
+        .menu.active {
+            display: block;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+            margin-left: 10px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        .settings-menu {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .settings-menu.active {
+            display: block;
         }
     </style>
 </head>
 <body>
     <h2>Manage Extensions</h2>
-
     <div id="extensionsList"></div>
 
-    <button class="add-button" id="addExtensionBtn">+ Add Extension</button>
+    <!-- Плавающая кнопка "Добавить" -->
+    <div class="add-fab" id="addFab">+</div>
 
-    <div id="extensionForm">
-        <input type="text" id="extensionName" placeholder="Extension Name">
-        <input type="text" id="extensionId" placeholder="Extension ID">
-        <button class="add-button" id="saveExtensionBtn">Save Extension</button>
+    <!-- Кнопка Telegram -->
+    <a href="https://t.me/dispiritee" target="_blank" class="telegram-fab">
+        <img src="Icons/telegram_icon.png" alt="Telegram">
+    </a>
+
+    <div class="menu" id="addMenu">
+        <select id="installedExtensions"></select>
+        <button class="add-button" id="addExtensionBtn">Add Selected Extension</button>
     </div>
 
-    <a href="https://t.me/dispiritee" target="_blank" class="telegram-button">
-        Contact me on Telegram
-    </a>
+    <!-- Кнопка настроек -->
+    <div class="settings-button" id="settingsBtn">⚙️</div>
+    <div class="settings-menu" id="settingsMenu">
+        <button id="removeAllBtn">Remove All Extensions</button>
+        <button id="addAllBtn">Add All Installed Extensions</button>
+    </div>
 
     <script src="popup.js"></script>
 </body>

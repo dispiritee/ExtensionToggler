@@ -1,100 +1,76 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
   const extensionsList = document.getElementById('extensionsList');
+  const addFab = document.getElementById('addFab');
+  const addMenu = document.getElementById('addMenu');
+  const installedExtensions = document.getElementById('installedExtensions');
   const addExtensionBtn = document.getElementById('addExtensionBtn');
-  const extensionForm = document.getElementById('extensionForm');
-  const saveExtensionBtn = document.getElementById('saveExtensionBtn');
-  const extensionNameInput = document.getElementById('extensionName');
-  const extensionIdInput = document.getElementById('extensionId');
-  let editingExtensionIndex = -1;
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsMenu = document.getElementById('settingsMenu');
+  const removeAllBtn = document.getElementById('removeAllBtn');
+  const addAllBtn = document.getElementById('addAllBtn');
 
-  function loadExtensions() {
-    chrome.storage.sync.get('extensions', (data) => {
-      const extensions = data.extensions || [];
-      renderExtensions(extensions);
-    });
-  }
+  let installedExts = [];
 
-  function renderExtensions(extensions) {
-    extensionsList.innerHTML = '';
-    extensions.forEach((extension, index) => {
-      const extensionContainer = document.createElement('div');
-      extensionContainer.classList.add('toggle-container');
+  // Получаем все расширения (включенные и выключенные)
+  chrome.management.getAll((extensions) => {
+      installedExts = extensions.filter(ext => !ext.isApp); // убираем только приложения
+      installedExts.forEach(ext => {
+          const option = document.createElement('option');
+          option.value = ext.id;
+          option.textContent = ext.name;
+          installedExtensions.appendChild(option);
+      });
+  });
 
-      const toggleSwitch = document.createElement('input');
-      toggleSwitch.type = 'checkbox';
-      toggleSwitch.checked = extension.enabled;
-      toggleSwitch.addEventListener('change', () => toggleExtension(extension.id, toggleSwitch.checked));
-
-      const label = document.createElement('label');
-      label.textContent = extension.name;
-
-      const settingsButton = document.createElement('span');
-      settingsButton.classList.add('settings-button');
-      settingsButton.innerHTML = '⚙️';
-      settingsButton.addEventListener('click', () => editExtension(index, extension));
-
-      extensionContainer.appendChild(toggleSwitch);
-      extensionContainer.appendChild(label);
-      extensionContainer.appendChild(settingsButton);
-      extensionsList.appendChild(extensionContainer);
-    });
-  }
-
-  function toggleExtension(extensionId, enabled) {
-    chrome.management.setEnabled(extensionId, enabled, () => {
-      console.log(`Extension ${extensionId} ${enabled ? 'enabled' : 'disabled'}`);
-    });
-  }
+  addFab.addEventListener('click', () => {
+      addMenu.classList.toggle('active');
+  });
 
   addExtensionBtn.addEventListener('click', () => {
-    if (extensionForm.classList.contains('active')) {
-      extensionForm.classList.remove('active');
-      extensionNameInput.value = '';
-      extensionIdInput.value = '';
-    } else {
-      extensionForm.classList.add('active');
-      editingExtensionIndex = -1;
-    }
+      const selectedExtId = installedExtensions.value;
+      const selectedExt = installedExts.find(ext => ext.id === selectedExtId);
+      if (selectedExt) {
+          addExtensionToList(selectedExt);
+      }
+      addMenu.classList.remove('active');
   });
 
-  saveExtensionBtn.addEventListener('click', () => {
-    const name = extensionNameInput.value.trim();
-    const id = extensionIdInput.value.trim();
+  function addExtensionToList(extension) {
+      const listItem = document.createElement('div');
+      listItem.classList.add('extension-item');
+      listItem.innerHTML = `
+          <div class="toggle-container">
+              <label>${extension.name}</label>
+              <label class="remove-button">❌</label>
+          </div>
+          <label class="toggle-switch">
+              <input type="checkbox" ${extension.enabled ? 'checked' : ''}>
+              <span class="slider"></span>
+          </label>
+      `;
+      extensionsList.appendChild(listItem);
 
-    if (name && id) {
-      chrome.storage.sync.get('extensions', (data) => {
-        const extensions = data.extensions || [];
-
-        if (editingExtensionIndex >= 0) {
-          extensions[editingExtensionIndex].name = name;
-          extensions[editingExtensionIndex].id = id;
-        } else {
-          extensions.push({ name, id, enabled: false });
-        }
-
-        chrome.storage.sync.set({ extensions }, () => {
-          extensionForm.classList.remove('active');
-          extensionNameInput.value = '';
-          extensionIdInput.value = '';
-          loadExtensions();
-        });
+      const toggleSwitch = listItem.querySelector('input[type="checkbox"]');
+      toggleSwitch.addEventListener('change', function() {
+          chrome.management.setEnabled(extension.id, toggleSwitch.checked);
       });
-    }
-  });
 
-  function editExtension(index, extension) {
-    if (extensionForm.classList.contains('active') && editingExtensionIndex === index) {
-      extensionForm.classList.remove('active');
-      extensionNameInput.value = '';
-      extensionIdInput.value = '';
-      editingExtensionIndex = -1;
-    } else {
-      extensionForm.classList.add('active');
-      extensionNameInput.value = extension.name;
-      extensionIdInput.value = extension.id;
-      editingExtensionIndex = index;
-    }
+      // Удаление расширения
+      const removeButton = listItem.querySelector('.remove-button');
+      removeButton.addEventListener('click', () => {
+          extensionsList.removeChild(listItem);
+      });
   }
 
-  loadExtensions();
+  settingsBtn.addEventListener('click', () => {
+      settingsMenu.classList.toggle('active');
+  });
+
+  removeAllBtn.addEventListener('click', () => {
+      extensionsList.innerHTML = '';
+  });
+
+  addAllBtn.addEventListener('click', () => {
+      installedExts.forEach(addExtensionToList);
+  });
 });
