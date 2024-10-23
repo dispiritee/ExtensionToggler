@@ -11,9 +11,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   let installedExts = [];
 
-  // Получаем все расширения (включенные и выключенные)
   chrome.management.getAll((extensions) => {
-      installedExts = extensions.filter(ext => !ext.isApp); // убираем только приложения
+      installedExts = extensions.filter(ext => !ext.isApp);
       installedExts.forEach(ext => {
           const option = document.createElement('option');
           option.value = ext.id;
@@ -55,7 +54,6 @@ document.addEventListener('DOMContentLoaded', function() {
           chrome.management.setEnabled(extension.id, toggleSwitch.checked);
       });
 
-      // Удаление расширения
       const removeButton = listItem.querySelector('.remove-button');
       removeButton.addEventListener('click', () => {
           extensionsList.removeChild(listItem);
