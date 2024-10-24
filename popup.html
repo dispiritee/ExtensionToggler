@@ -15,20 +15,17 @@
             border-radius: 8px;
             overflow: hidden;
         }
-
         h2 {
             font-size: 20px;
             margin-bottom: 20px;
             text-align: center;
             color: #333;
         }
-
         #extensionsList {
-            max-height: 220px;
+            max-height: 250px;
             overflow-y: auto;
             margin-bottom: 20px;
         }
-
         .extension-item {
             display: flex;
             align-items: center;
@@ -39,14 +36,10 @@
             border-radius: 5px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-
         .toggle-container {
             display: flex;
             align-items: center;
-            max-width: 200px;
-            justify-content: space-between;
         }
-
         .toggle-container label {
             margin-left: 10px;
             color: #333;
@@ -55,30 +48,12 @@
             text-overflow: ellipsis;
             max-width: 140px;
         }
-
         .remove-button {
             cursor: pointer;
             color: red;
             font-weight: bold;
             margin-left: 10px;
         }
-
-        .add-button {
-            width: 100%;
-            padding: 10px;
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px 0;
-            font-size: 16px;
-        }
-
-        .add-button:hover {
-            background-color: #45a049;
-        }
-
         .add-fab {
             position: fixed;
             bottom: 20px;
@@ -91,20 +66,18 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             cursor: pointer;
             font-size: 32px;
             transition: background-color 0.3s;
         }
-
         .add-fab:hover {
             background-color: #45a049;
         }
-
-        .telegram-fab {
+        .telegram-button {
             position: fixed;
             bottom: 20px;
-            right: 100px;
+            right: 90px;
             width: 60px;
             height: 60px;
             border-radius: 50%;
@@ -115,25 +88,10 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
             cursor: pointer;
         }
-
-        .telegram-fab img {
-            width: 32px;
-            height: 32px;
+        .telegram-button img {
+            width: 25px;
+            height: 25px;
         }
-
-        .settings-button {
-            cursor: pointer;
-            font-size: 20px;
-            color: #007bff;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-
-        .settings-button:hover {
-            color: #0056b3;
-        }
-
         .menu {
             display: none;
             position: absolute;
@@ -147,63 +105,7 @@
             z-index: 1000;
             width: 280px;
         }
-
         .menu.active {
-            display: block;
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 20px;
-            margin-left: 10px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 20px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            border-radius: 50%;
-            transition: .4s;
-        }
-
-        input:checked + .slider {
-            background-color: #2196F3;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(20px);
-        }
-
-        .settings-menu {
-            display: none;
-            margin-top: 20px;
-        }
-
-        .settings-menu.active {
             display: block;
         }
     </style>
@@ -214,19 +116,13 @@
 
     <div class="add-fab" id="addFab">+</div>
 
-    <a href="https://t.me/dispiritee" target="_blank" class="telegram-fab">
+    <div class="telegram-button" id="telegramButton">
         <img src="Icons/telegram_icon.png" alt="Telegram">
-    </a>
+    </div>
 
     <div class="menu" id="addMenu">
         <select id="installedExtensions"></select>
         <button class="add-button" id="addExtensionBtn">Add Selected Extension</button>
-    </div>
-
-    <div class="settings-button" id="settingsBtn">⚙️</div>
-    <div class="settings-menu" id="settingsMenu">
-        <button id="removeAllBtn">Remove All Extensions</button>
-        <button id="addAllBtn">Add All Installed Extensions</button>
     </div>
 
     <script src="popup.js"></script>

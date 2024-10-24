@@ -1,74 +1,96 @@
 document.addEventListener('DOMContentLoaded', function() {
-  const extensionsList = document.getElementById('extensionsList');
-  const addFab = document.getElementById('addFab');
-  const addMenu = document.getElementById('addMenu');
-  const installedExtensions = document.getElementById('installedExtensions');
-  const addExtensionBtn = document.getElementById('addExtensionBtn');
-  const settingsBtn = document.getElementById('settingsBtn');
-  const settingsMenu = document.getElementById('settingsMenu');
-  const removeAllBtn = document.getElementById('removeAllBtn');
-  const addAllBtn = document.getElementById('addAllBtn');
+    const addFab = document.getElementById('addFab');
+    const addMenu = document.getElementById('addMenu');
+    const extensionsList = document.getElementById('extensionsList');
+    const installedExtensionsSelect = document.getElementById('installedExtensions');
+    const addExtensionBtn = document.getElementById('addExtensionBtn');
+    const telegramButton = document.getElementById('telegramButton');
 
-  let installedExts = [];
+    chrome.storage.sync.get({ extensions: [] }, function(result) {
+        const savedExtensions = result.extensions;
+        savedExtensions.forEach(function(savedExtension) {
+            chrome.management.get(savedExtension.id, function(extension) {
+                if (extension) {
+                    addExtensionToList(extension);
+                }
+            });
+        });
+    });
 
-  chrome.management.getAll((extensions) => {
-      installedExts = extensions.filter(ext => !ext.isApp);
-      installedExts.forEach(ext => {
-          const option = document.createElement('option');
-          option.value = ext.id;
-          option.textContent = ext.name;
-          installedExtensions.appendChild(option);
-      });
-  });
+    addFab.addEventListener('click', function() {
+        addMenu.classList.toggle('active');
 
-  addFab.addEventListener('click', () => {
-      addMenu.classList.toggle('active');
-  });
+        chrome.management.getAll(function(extensions) {
+            installedExtensionsSelect.innerHTML = '';
+            extensions.forEach(function(extension) {
+                if (!extension.isApp && extension.id !== chrome.runtime.id) { // Исключаем само расширение
+                    const option = document.createElement('option');
+                    option.value = extension.id;
+                    option.textContent = extension.name;
+                    installedExtensionsSelect.appendChild(option);
+                }
+            });
+        });
+    });
 
-  addExtensionBtn.addEventListener('click', () => {
-      const selectedExtId = installedExtensions.value;
-      const selectedExt = installedExts.find(ext => ext.id === selectedExtId);
-      if (selectedExt) {
-          addExtensionToList(selectedExt);
-      }
-      addMenu.classList.remove('active');
-  });
+    addExtensionBtn.addEventListener('click', function() {
+        const selectedExtensionId = installedExtensionsSelect.value;
+        chrome.management.get(selectedExtensionId, function(extension) {
+            addExtensionToList(extension);
+            saveExtensionToStorage(extension);
+        });
+    });
 
-  function addExtensionToList(extension) {
-      const listItem = document.createElement('div');
-      listItem.classList.add('extension-item');
-      listItem.innerHTML = `
-          <div class="toggle-container">
-              <label>${extension.name}</label>
-              <label class="remove-button">❌</label>
-          </div>
-          <label class="toggle-switch">
-              <input type="checkbox" ${extension.enabled ? 'checked' : ''}>
-              <span class="slider"></span>
-          </label>
-      `;
-      extensionsList.appendChild(listItem);
+    function addExtensionToList(extension) {
+        const listItem = document.createElement('div');
+        listItem.classList.add('extension-item');
 
-      const toggleSwitch = listItem.querySelector('input[type="checkbox"]');
-      toggleSwitch.addEventListener('change', function() {
-          chrome.management.setEnabled(extension.id, toggleSwitch.checked);
-      });
+        const label = document.createElement('label');
+        label.textContent = extension.name;
 
-      const removeButton = listItem.querySelector('.remove-button');
-      removeButton.addEventListener('click', () => {
-          extensionsList.removeChild(listItem);
-      });
-  }
+        const toggleContainer = document.createElement('div');
+        toggleContainer.classList.add('toggle-container');
 
-  settingsBtn.addEventListener('click', () => {
-      settingsMenu.classList.toggle('active');
-  });
+        const toggleSwitch = document.createElement('input');
+        toggleSwitch.type = 'checkbox';
+        toggleSwitch.checked = extension.enabled;
+        toggleSwitch.addEventListener('change', function() {
+            chrome.management.setEnabled(extension.id, toggleSwitch.checked);
+        });
 
-  removeAllBtn.addEventListener('click', () => {
-      extensionsList.innerHTML = '';
-  });
+        const removeButton = document.createElement('span');
+        removeButton.textContent = '❌';
+        removeButton.classList.add('remove-button');
+        removeButton.addEventListener('click', function() {
+            listItem.remove();
+            removeExtensionFromStorage(extension.id);
+        });
 
-  addAllBtn.addEventListener('click', () => {
-      installedExts.forEach(addExtensionToList);
-  });
+        toggleContainer.appendChild(toggleSwitch);
+        toggleContainer.appendChild(removeButton);
+        listItem.appendChild(label);
+        listItem.appendChild(toggleContainer);
+        extensionsList.appendChild(listItem);
+    }
+
+    function saveExtensionToStorage(extension) {
+        chrome.storage.sync.get({ extensions: [] }, function(result) {
+            const extensions = result.extensions;
+            if (!extensions.find(ext => ext.id === extension.id)) {
+                extensions.push({ id: extension.id, name: extension.name });
+                chrome.storage.sync.set({ extensions: extensions });
+            }
+        });
+    }
+
+    function removeExtensionFromStorage(extensionId) {
+        chrome.storage.sync.get({ extensions: [] }, function(result) {
+            const extensions = result.extensions.filter(ext => ext.id !== extensionId);
+            chrome.storage.sync.set({ extensions: extensions });
+        });
+    }
+
+    telegramButton.addEventListener('click', function() {
+        window.open('https://t.me/dispiritee', '_blank');
+    });
 });
